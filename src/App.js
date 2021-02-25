@@ -1,15 +1,14 @@
 import './App.css';
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 import Snake from './Snake';
 import Foods from './Food';
 import Background from './Background';
 
-
-const SIZE_AREA = 20;
+const SIZE_AREA = 10;
 const SIZE_PIXELS = 600;
-const SIZE_CELL = SIZE_PIXELS / SIZE_AREA;
 const MAX_FOOD = 5;
 const START_SPEED = 800;
+const MAX_SPEED = 900;
 
 const DIRECTION = {
   RIGHT: [1, 0],
@@ -18,37 +17,52 @@ const DIRECTION = {
   DOWN: [0, 1]
 }
 
-const getRandomCoordinates = () => {
-  let x = Math.floor((Math.random() * SIZE_AREA));
-  let y = Math.floor((Math.random() * SIZE_AREA));
+const getRandomCoordinates = (sizeArea) => {
+  let x = Math.floor((Math.random() * sizeArea));
+  let y = Math.floor((Math.random() * sizeArea));
   return [x, y];
 }
 
-const getFoods = () => {
+const getFoods = (count, sizeArea) => {
   let foods = [];
-  for (let i = 0; i < MAX_FOOD; i++) {
-    foods.push(getRandomCoordinates());
+  for (let i = 0; i < count; i++) {
+    foods.push(getRandomCoordinates(sizeArea));
   }
   return foods;
 }
 
-const initialState = {
-  foods: getFoods(),
-  direction: DIRECTION.DOWN,
-  speed: START_SPEED,
-  snakeDots: [
-    [0, 1],
-    [0, 2],
-    [0, 3]
-  ],
-  idInterval: null,
-  settings: {
-    borderCollisions: true
-  }
-}
-
 class App extends Component {
-  state = initialState;
+
+  constructor(props) {
+    super(props);
+    this.state = this.getInitialState();
+  }
+
+  getInitialState = () => {
+    const borderCollisions = localStorage.getItem('borderCollisions') === 'true';
+    const selfCollisions = localStorage.getItem('selfCollisions') === 'true';
+    const countFood = parseInt(localStorage.getItem('countFood'), 10) || 1;
+    const sizeArea = parseInt(localStorage.getItem('sizeArea'), 10) || SIZE_AREA;
+
+    return {
+      direction: DIRECTION.DOWN,
+      speed: 0,
+      snakeDots: [
+        [3, 1],
+        [3, 2],
+        [3, 3]
+      ],
+      idInterval: null,
+      settings: {
+        borderCollisions,
+        selfCollisions,
+        countFood,
+        sizeArea
+      },
+      foods: getFoods(countFood, sizeArea),
+    }
+  }
+
 
   componentDidMount() {
     document.onkeydown = this.onKeyDown;
@@ -56,13 +70,15 @@ class App extends Component {
   }
 
   componentDidUpdate() {
-    this.checkIfCollapse();
+    if (this.state.settings.selfCollisions) {
+      this.checkIfCollapse();
+    }
     this.checkIfEat();
   }
 
   init() {
     clearInterval(this.state.idInterval);
-    this.setState(initialState);
+    this.setState(this.getInitialState());
     this.changeSpeed(this.state.speed);
   }
 
@@ -90,9 +106,9 @@ class App extends Component {
         }
         break;
       case 27:
-        if(this.state.speed){
-        this.gamePause();
-        } else{
+        if (this.state.speed) {
+          this.gamePause();
+        } else {
           this.gameResume();
         }
         break;
@@ -113,22 +129,19 @@ class App extends Component {
   }
 
   moveSnake = () => {
-    let out = false;
-    /*let dots = this.state.snakeDots.map( (elem) => {
-      return [elem[0] + this.state.direction[0], elem[1] + this.state.direction[1]];
-    })*/
+    let outOfBorder = false;
     let dots = [...this.state.snakeDots];
     let head = dots[dots.length - 1];
     head = [head[0] + this.state.direction[0], head[1] + this.state.direction[1]];
 
     [0, 1].forEach((i) => {
-      if (head[i] >= SIZE_AREA) {
-        out = true;
+      if (head[i] >= this.state.settings.sizeArea) {
+        outOfBorder = true;
         head[i] = 0;
       }
       if (head[i] < 0) {
-        head[i] = SIZE_AREA - 1;
-        out = true;
+        head[i] = this.state.settings.sizeArea - 1;
+        outOfBorder = true;
       }
     });
 
@@ -136,12 +149,11 @@ class App extends Component {
       debugger;
     }
 
-    if (out && this.state.settings.borderCollisions) {
+    if (outOfBorder && this.state.settings.borderCollisions) {
       this.onGameOver();
     } else {
       this.setState({
         snakeDots: [...dots.slice(1), head]
-        //snakeDots: dots
       });
     }
   }
@@ -170,7 +182,9 @@ class App extends Component {
   removeFood(i) {
     const newFoods = [...this.state.foods];
     newFoods.splice(i, 1);
-    newFoods.push(getRandomCoordinates());
+    while (newFoods.length < this.state.settings.countFood) {
+      newFoods.push(getRandomCoordinates(this.state.settings.sizeArea));
+    }
     this.setState({
       foods: newFoods
     });
@@ -185,35 +199,72 @@ class App extends Component {
   }
 
   inceaseSpeed() {
-    if (this.state.speed < 950) {
+    if (this.state.speed < MAX_SPEED) {
       this.changeSpeed(this.state.speed + 10);
     }
   }
 
   onGameOver() {
+    alert(`Game Over. Snake length is ${this.state.snakeDots.length}`);
+    this.newGame();
+  }
+
+  newGame() {
     clearTimeout(this.state.idInterval);
     this.init();
-    alert(`Game Over. Snake length is ${this.state.snakeDots.length}`);
   }
 
   gamePause = () => {
+    this._speed = this.state.speed;
     this.changeSpeed(0);
   }
 
   gameResume = () => {
-    this.changeSpeed(800);
+    this.changeSpeed(this._speed || START_SPEED);
   }
 
   changeBorderCollisions = () => {
     let settings = this.state.settings;
     settings.borderCollisions = !settings.borderCollisions;
+    localStorage.setItem('borderCollisions', settings.borderCollisions);
     this.setState({
       settings: settings
     });
   }
 
+  changeSelfCollisions = () => {
+    let settings = this.state.settings;
+    settings.selfCollisions = !settings.selfCollisions;
+    localStorage.setItem('selfCollisions', settings.selfCollisions);
+    this.setState({
+      settings: settings
+    });
+  }
+
+  changeCountFood = (ev) => {
+    let settings = this.state.settings;
+    settings.countFood = parseInt(ev.target.value, 10);
+    localStorage.setItem('countFood', settings.countFood);
+    const newFoods = getFoods(settings.countFood, settings.sizeArea);
+    this.setState({
+      foods: newFoods,
+      settings: settings
+    });
+  }
+
+  changeSizeArea = (ev) => {
+    let settings = this.state.settings;
+    settings.sizeArea = parseInt(ev.target.value, 10);
+    localStorage.setItem('sizeArea', settings.sizeArea);
+    this.setState({
+      settings: settings
+    });
+    this.newGame();
+  }
+
   render() {
     let button;
+    let SIZE_CELL = SIZE_PIXELS / this.state.settings.sizeArea;
     if (this.state.speed === 0) {
       button = <button onClick={this.gameResume}>Resume</button>
     } else {
@@ -233,7 +284,7 @@ class App extends Component {
               </div>
             </div>
             <div className="game-area">
-              <Background sizeCell={SIZE_CELL} sizeArea={SIZE_AREA} />
+              <Background sizeCell={SIZE_CELL} sizeArea={this.state.settings.sizeArea} />
               <Snake snakeDots={this.state.snakeDots} size={SIZE_CELL} />
               <Foods foods={this.state.foods} size={SIZE_CELL} />
             </div>
@@ -241,6 +292,28 @@ class App extends Component {
               <div>
                 <span>Border collisions&nbsp;</span>
                 <input type="checkbox" onChange={this.changeBorderCollisions} checked={this.state.settings.borderCollisions} />
+              </div>
+              <div>
+                <span>Self collisions&nbsp;</span>
+                <input type="checkbox" onChange={this.changeSelfCollisions} checked={this.state.settings.selfCollisions} />
+              </div>
+              <div>
+                <span>Count food&nbsp;</span>
+                <select value={this.state.settings.countFood} onChange={this.changeCountFood}>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+              </div>
+              <div>
+                <span>Size game area&nbsp;</span>
+                <select value={this.state.settings.sizeArea} onChange={this.changeSizeArea}>
+                  <option value="20">20x20</option>
+                  <option value="30">30x30</option>
+                  <option value="40">40x40</option>
+                </select>
               </div>
             </div>
           </div>
