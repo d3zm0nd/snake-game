@@ -1,0 +1,61 @@
+.game-header {
+  margin: 4px auto;
+  text-align: center;
+}
+
+.game-content{
+  display: grid;
+  grid-template-columns: 1fr 600px 1fr;
+  grid-template-areas: "statistics game settings";
+}
+
+.game-area {
+  grid-area: game;
+  position: relative;
+  width: 600px;
+  height: 600px;
+  outline: 2px solid darkgray;
+}
+
+.game-statistics {
+  grid-area: statistics;
+  text-align: right;
+  padding-right: 8px;
+}
+
+
+.game-settings {
+  grid-area: settings;
+  padding-left: 8px;
+}
+
+.game-footer {
+  position: relative;
+  padding-top: 8px;
+  margin: 0px auto;
+  width: 600px;
+  height: 100px;
+}
+
+.snake-dot {
+  position: absolute;
+  background-color: #000;
+  border: 1px solid #fff;
+  z-index: 2;
+}
+
+.snake-dot--head {
+  background-color: yellow;
+  border: 1px solid #000;
+}
+
+.snake-dot--gray {
+  background-color: gray;
+}
+
+.snake-food {
+  position: absolute;
+  background-color: red;
+  border: 1px solid #fff;
+  z-index:1;
+}
