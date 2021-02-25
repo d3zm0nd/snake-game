@@ -37,25 +37,45 @@
   height: 100px;
 }
 
+.game-background{
+  position: relative;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.game-background-cell {
+   position: absolute;
+   background-color: aquamarine;
+   z-index: 1;
+}
+
+.game-background-cell--dark {
+  background-color: #aad751;
+}
+
+.game-background-cell--light {
+  background-color: #a2d149;
+}
+
 .snake-dot {
   position: absolute;
-  background-color: #000;
-  border: 1px solid #fff;
-  z-index: 2;
+  background-color: #4775eb;
+  z-index: 3;
 }
 
 .snake-dot--head {
-  background-color: yellow;
-  border: 1px solid #000;
+  background-color: #412C84;
+  border: 2px solid #200772;
 }
 
 .snake-dot--gray {
-  background-color: gray;
+  background-color: #4775eb;
 }
 
 .snake-food {
   position: absolute;
   background-color: red;
   border: 1px solid #fff;
-  z-index:1;
+  z-index:2;
 }

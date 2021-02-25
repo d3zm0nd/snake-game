@@ -2,19 +2,20 @@ import './App.css';
 import React, { Component } from 'react';
 import Snake from './Snake';
 import Foods from './Food';
+import Background from './Background';
 
 
 const SIZE_AREA = 20;
 const SIZE_PIXELS = 600;
 const SIZE_CELL = SIZE_PIXELS / SIZE_AREA;
 const MAX_FOOD = 5;
-const START_SPEED = 950;
+const START_SPEED = 800;
 
 const DIRECTION = {
-  RIGHT: [0.1, 0],
-  LEFT: [-0.1, 0],
-  UP: [0, -0.1],
-  DOWN: [0, 0.1]
+  RIGHT: [1, 0],
+  LEFT: [-1, 0],
+  UP: [0, -1],
+  DOWN: [0, 1]
 }
 
 const getRandomCoordinates = () => {
@@ -88,6 +89,15 @@ class App extends Component {
           this.setState({ direction: DIRECTION.RIGHT });
         }
         break;
+      case 27:
+        if(this.state.speed){
+        this.gamePause();
+        } else{
+          this.gameResume();
+        }
+        break;
+      default:
+        break;
     }
   }
 
@@ -104,33 +114,34 @@ class App extends Component {
 
   moveSnake = () => {
     let out = false;
-    let dots = this.state.snakeDots.map( (elem) => {
+    /*let dots = this.state.snakeDots.map( (elem) => {
       return [elem[0] + this.state.direction[0], elem[1] + this.state.direction[1]];
-    })
+    })*/
+    let dots = [...this.state.snakeDots];
     let head = dots[dots.length - 1];
-    //head = [head[0] + this.state.direction[0], head[1] + this.state.direction[1]];
+    head = [head[0] + this.state.direction[0], head[1] + this.state.direction[1]];
 
     [0, 1].forEach((i) => {
-      let newValue;
       if (head[i] >= SIZE_AREA) {
-        newValue = 0;
         out = true;
+        head[i] = 0;
       }
       if (head[i] < 0) {
-        newValue = SIZE_AREA - 1;
+        head[i] = SIZE_AREA - 1;
         out = true;
       }
-      if (out) {
-        head[i] = newValue;
-      }
     });
+
+    if (isNaN(head[0]) || isNaN(head[1])) {
+      debugger;
+    }
 
     if (out && this.state.settings.borderCollisions) {
       this.onGameOver();
     } else {
       this.setState({
-        //snakeDots: [...dots.slice(1), head]
-        snakeDots: dots
+        snakeDots: [...dots.slice(1), head]
+        //snakeDots: dots
       });
     }
   }
@@ -148,7 +159,7 @@ class App extends Component {
   checkIfEat() {
     let head = this.state.snakeDots[this.state.snakeDots.length - 1];
     this.state.foods.forEach((food, i) => {
-      if (head[0] == food[0] && head[1] === food[1]) {
+      if (head[0] === food[0] && head[1] === food[1]) {
         this.removeFood(i);
         this.enlargeSnake();
         this.inceaseSpeed();
@@ -222,6 +233,7 @@ class App extends Component {
               </div>
             </div>
             <div className="game-area">
+              <Background sizeCell={SIZE_CELL} sizeArea={SIZE_AREA} />
               <Snake snakeDots={this.state.snakeDots} size={SIZE_CELL} />
               <Foods foods={this.state.foods} size={SIZE_CELL} />
             </div>
