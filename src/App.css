@@ -14,7 +14,7 @@
   position: relative;
   width: 600px;
   height: 600px;
-  outline: 2px solid darkgray;
+  outline: 2px solid #578a34;
 }
 
 .game-statistics {
@@ -27,6 +27,12 @@
 .game-settings {
   grid-area: settings;
   padding-left: 8px;
+}
+
+.game-settings div,
+.game-statistics div
+{
+  padding: 4px;
 }
 
 .game-footer {
@@ -60,22 +66,22 @@
 
 .snake-dot {
   position: absolute;
-  background-color: #4775eb;
   z-index: 3;
-}
-
-.snake-dot--head {
-  background-color: #412C84;
-  border: 2px solid #200772;
-}
-
-.snake-dot--gray {
-  background-color: #4775eb;
 }
 
 .snake-food {
   position: absolute;
-  background-color: red;
-  border: 1px solid #fff;
   z-index:2;
+}
+
+.rotated180{
+
+}
+
+.rotated90{
+
+}
+
+.rotade240{
+
 }

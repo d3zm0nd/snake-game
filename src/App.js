@@ -3,6 +3,8 @@ import React, { Component, useState } from 'react';
 import Snake from './Snake';
 import Foods from './Food';
 import Background from './Background';
+import Settings from './Settings'
+import Statistics from './Statistics';
 
 const SIZE_AREA = 10;
 const SIZE_PIXELS = 600;
@@ -63,16 +65,13 @@ class App extends Component {
     }
   }
 
-
   componentDidMount() {
     document.onkeydown = this.onKeyDown;
     this.init();
   }
 
   componentDidUpdate() {
-    if (this.state.settings.selfCollisions) {
-      this.checkIfCollapse();
-    }
+    this.checkIfCollapse();
     this.checkIfEat();
   }
 
@@ -105,7 +104,7 @@ class App extends Component {
           this.setState({ direction: DIRECTION.RIGHT });
         }
         break;
-      case 27:
+      case 32:
         if (this.state.speed) {
           this.gamePause();
         } else {
@@ -145,10 +144,6 @@ class App extends Component {
       }
     });
 
-    if (isNaN(head[0]) || isNaN(head[1])) {
-      debugger;
-    }
-
     if (outOfBorder && this.state.settings.borderCollisions) {
       this.onGameOver();
     } else {
@@ -159,12 +154,14 @@ class App extends Component {
   }
 
   checkIfCollapse() {
-    const head = this.state.snakeDots[this.state.snakeDots.length - 1];
-    const collapsed = this.state.snakeDots.slice(0, -1).some((elem) => {
-      return elem[0] === head[0] && elem[1] === head[1];
-    });
-    if (collapsed) {
-      this.onGameOver();
+    if (this.state.settings.selfCollisions) {
+      const head = this.state.snakeDots[this.state.snakeDots.length - 1];
+      const collapsed = this.state.snakeDots.slice(0, -1).some((elem) => {
+        return elem[0] === head[0] && elem[1] === head[1];
+      });
+      if (collapsed) {
+        this.onGameOver();
+      }
     }
   }
 
@@ -192,7 +189,7 @@ class App extends Component {
 
   enlargeSnake() {
     const newSnake = [...this.state.snakeDots];
-    newSnake.unshift([])
+    newSnake.unshift([null,null]);
     this.setState({
       snakeDots: newSnake
     });
@@ -223,43 +220,21 @@ class App extends Component {
     this.changeSpeed(this._speed || START_SPEED);
   }
 
-  changeBorderCollisions = () => {
+  onChangeSettings = (field, value) => {
     let settings = this.state.settings;
-    settings.borderCollisions = !settings.borderCollisions;
-    localStorage.setItem('borderCollisions', settings.borderCollisions);
+    settings[field] = value
+    localStorage.setItem('sizeArea', value);
     this.setState({
       settings: settings
     });
+    this.afterChangeSetting(field);
   }
 
-  changeSelfCollisions = () => {
-    let settings = this.state.settings;
-    settings.selfCollisions = !settings.selfCollisions;
-    localStorage.setItem('selfCollisions', settings.selfCollisions);
-    this.setState({
-      settings: settings
-    });
-  }
-
-  changeCountFood = (ev) => {
-    let settings = this.state.settings;
-    settings.countFood = parseInt(ev.target.value, 10);
-    localStorage.setItem('countFood', settings.countFood);
-    const newFoods = getFoods(settings.countFood, settings.sizeArea);
-    this.setState({
-      foods: newFoods,
-      settings: settings
-    });
-  }
-
-  changeSizeArea = (ev) => {
-    let settings = this.state.settings;
-    settings.sizeArea = parseInt(ev.target.value, 10);
-    localStorage.setItem('sizeArea', settings.sizeArea);
-    this.setState({
-      settings: settings
-    });
-    this.newGame();
+  afterChangeSetting = (field) => {
+    switch (field) {
+      case 'sizeArea': this.newGame(); break;
+      default: break;
+    }
   }
 
   render() {
@@ -277,55 +252,21 @@ class App extends Component {
       </header>
         <div>
           <div class="game-content">
-            <div className="game-statistics">
-              <div>
-                <div>Speed: {this.state.speed}</div>
-                <div>Size: {this.state.snakeDots.length}</div>
-              </div>
-            </div>
+            <Statistics size={this.state.snakeDots.length} speed={this.state.speed} />
             <div className="game-area">
               <Background sizeCell={SIZE_CELL} sizeArea={this.state.settings.sizeArea} />
               <Snake snakeDots={this.state.snakeDots} size={SIZE_CELL} />
               <Foods foods={this.state.foods} size={SIZE_CELL} />
             </div>
-            <div className="game-settings">
-              <div>
-                <span>Border collisions&nbsp;</span>
-                <input type="checkbox" onChange={this.changeBorderCollisions} checked={this.state.settings.borderCollisions} />
-              </div>
-              <div>
-                <span>Self collisions&nbsp;</span>
-                <input type="checkbox" onChange={this.changeSelfCollisions} checked={this.state.settings.selfCollisions} />
-              </div>
-              <div>
-                <span>Count food&nbsp;</span>
-                <select value={this.state.settings.countFood} onChange={this.changeCountFood}>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                  <option value="5">5</option>
-                </select>
-              </div>
-              <div>
-                <span>Size game area&nbsp;</span>
-                <select value={this.state.settings.sizeArea} onChange={this.changeSizeArea}>
-                  <option value="20">20x20</option>
-                  <option value="30">30x30</option>
-                  <option value="40">40x40</option>
-                </select>
-              </div>
-            </div>
+            <Settings settings={this.state.settings} onChange={this.onChangeSettings} />
           </div>
         </div>
         <div className="game-footer">
           {button}
-
         </div>
       </div>
     )
   };
 }
-
 
 export default App;

@@ -1,15 +1,18 @@
+import apple from './apple.png'
+
 export default (props) => {
+    const outOfborder = props.size*0.2;
     return (
         <div>
             {props.foods.map((food, i) => {
                 const style = {
-                    left: `${food[0]*props.size}px`,
-                    top: `${food[1]*props.size}px`,
-                    width: `${props.size}px`,
-                    height: `${props.size}px`
+                    left: `${food[0]*props.size - outOfborder/2}px`,
+                    top: `${food[1]*props.size - outOfborder/2}px`,
+                    width: `${props.size+ outOfborder}px`,
+                    height: `${props.size+ outOfborder}px`
                 }
                 return (
-                    <div className="snake-food" key={i} style={style}></div>
+                    <img src={apple} className="snake-food" key={i} style={style}/>
                 );
             })}
         </div>
