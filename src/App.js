@@ -1,17 +1,21 @@
 import './App.css';
-import React, { Component, useState } from 'react';
+import React, { Component } from 'react';
 import Snake from './Snake';
-import Foods from './Food';
+import { Foods, generateFoods } from './Food';
 import Background from './Background';
 import Settings from './Settings'
 import Statistics from './Statistics';
 
-const SIZE_AREA = 10;
+
 const SIZE_PIXELS = 600;
-const MAX_FOOD = 5;
 const START_SPEED = 800;
 const MAX_SPEED = 900;
-
+const DEFAULT_SIZE_AREA = 15;
+const DEFAULT_SNAKE_POSITION = [
+  [3, 1],
+  [3, 2],
+  [3, 3]
+];
 const DIRECTION = {
   RIGHT: [1, 0],
   LEFT: [-1, 0],
@@ -19,41 +23,24 @@ const DIRECTION = {
   DOWN: [0, 1]
 }
 
-const getRandomCoordinates = (sizeArea) => {
-  let x = Math.floor((Math.random() * sizeArea));
-  let y = Math.floor((Math.random() * sizeArea));
-  return [x, y];
-}
-
-const getFoods = (count, sizeArea) => {
-  let foods = [];
-  for (let i = 0; i < count; i++) {
-    foods.push(getRandomCoordinates(sizeArea));
-  }
-  return foods;
-}
-
 class App extends Component {
 
   constructor(props) {
     super(props);
     this.state = this.getInitialState();
+    this.needToChangeDrirection = '';
   }
 
   getInitialState = () => {
     const borderCollisions = localStorage.getItem('borderCollisions') === 'true';
     const selfCollisions = localStorage.getItem('selfCollisions') === 'true';
     const countFood = parseInt(localStorage.getItem('countFood'), 10) || 1;
-    const sizeArea = parseInt(localStorage.getItem('sizeArea'), 10) || SIZE_AREA;
+    const sizeArea = parseInt(localStorage.getItem('sizeArea'), 10) || DEFAULT_SIZE_AREA;
 
     return {
       direction: DIRECTION.DOWN,
       speed: 0,
-      snakeDots: [
-        [3, 1],
-        [3, 2],
-        [3, 3]
-      ],
+      snakeDots: DEFAULT_SNAKE_POSITION,
       idInterval: null,
       settings: {
         borderCollisions,
@@ -61,7 +48,7 @@ class App extends Component {
         countFood,
         sizeArea
       },
-      foods: getFoods(countFood, sizeArea),
+      foods: generateFoods(countFood, sizeArea, DEFAULT_SNAKE_POSITION),
     }
   }
 
@@ -76,7 +63,8 @@ class App extends Component {
   }
 
   init() {
-    clearInterval(this.state.idInterval);
+    this._speed = 0;
+    clearInterval(this.state.idInterval); 
     this.setState(this.getInitialState());
     this.changeSpeed(this.state.speed);
   }
@@ -86,22 +74,22 @@ class App extends Component {
     switch (e.keyCode) {
       case 38:
         if (this.state.direction.toString() !== DIRECTION.DOWN.toString()) {
-          this.setState({ direction: DIRECTION.UP });
+          this.needToChangeDrirection =  DIRECTION.UP;
         }
         break;
       case 40:
         if (this.state.direction.toString() !== DIRECTION.UP.toString()) {
-          this.setState({ direction: DIRECTION.DOWN });
+          this.needToChangeDrirection =  DIRECTION.DOWN;
         }
         break;
       case 37:
         if (this.state.direction.toString() !== DIRECTION.RIGHT.toString()) {
-          this.setState({ direction: DIRECTION.LEFT });
+          this.needToChangeDrirection =  DIRECTION.LEFT;
         }
         break;
       case 39:
         if (this.state.direction.toString() !== DIRECTION.LEFT.toString()) {
-          this.setState({ direction: DIRECTION.RIGHT });
+          this.needToChangeDrirection =  DIRECTION.RIGHT;
         }
         break;
       case 32:
@@ -131,6 +119,12 @@ class App extends Component {
     let outOfBorder = false;
     let dots = [...this.state.snakeDots];
     let head = dots[dots.length - 1];
+
+    if(this.needToChangeDrirection){
+      this.setState({ direction: this.needToChangeDrirection });
+      this.needToChangeDrirection = null;
+    }
+
     head = [head[0] + this.state.direction[0], head[1] + this.state.direction[1]];
 
     [0, 1].forEach((i) => {
@@ -168,7 +162,7 @@ class App extends Component {
   checkIfEat() {
     let head = this.state.snakeDots[this.state.snakeDots.length - 1];
     this.state.foods.forEach((food, i) => {
-      if (head[0] === food[0] && head[1] === food[1]) {
+      if (head[0] === food.coordinates[0] && head[1] === food.coordinates[1]) {
         this.removeFood(i);
         this.enlargeSnake();
         this.inceaseSpeed();
@@ -177,11 +171,9 @@ class App extends Component {
   }
 
   removeFood(i) {
-    const newFoods = [...this.state.foods];
+    let newFoods = [...this.state.foods];
     newFoods.splice(i, 1);
-    while (newFoods.length < this.state.settings.countFood) {
-      newFoods.push(getRandomCoordinates(this.state.settings.sizeArea));
-    }
+    newFoods = newFoods.concat(generateFoods(this.state.settings.countFood - newFoods.length, this.state.settings.sizeArea, this.state.snakeDots));
     this.setState({
       foods: newFoods
     });
@@ -189,7 +181,7 @@ class App extends Component {
 
   enlargeSnake() {
     const newSnake = [...this.state.snakeDots];
-    newSnake.unshift([null,null]);
+    newSnake.unshift([null, null]);
     this.setState({
       snakeDots: newSnake
     });
@@ -197,7 +189,7 @@ class App extends Component {
 
   inceaseSpeed() {
     if (this.state.speed < MAX_SPEED) {
-      this.changeSpeed(this.state.speed + 10);
+      this.changeSpeed(this.state.speed + 5);
     }
   }
 
@@ -223,16 +215,17 @@ class App extends Component {
   onChangeSettings = (field, value) => {
     let settings = this.state.settings;
     settings[field] = value
-    localStorage.setItem('sizeArea', value);
+    localStorage.setItem(field, value);
     this.setState({
-      settings: settings
+      settings
     });
-    this.afterChangeSetting(field);
+    this.afterChangeSetting(field, value);
   }
 
-  afterChangeSetting = (field) => {
+  afterChangeSetting = (field, value) => {
     switch (field) {
       case 'sizeArea': this.newGame(); break;
+      case 'countFood': this.setState({foods:generateFoods(value, this.state.settings.sizeArea, this.state.snakeDots)}); break;
       default: break;
     }
   }

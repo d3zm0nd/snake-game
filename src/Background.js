@@ -1,4 +1,4 @@
-export default (props) => {
+ const background = (props) => {
     const getCells = (props) => {
         let content = [];
         for (let i = 0; i < props.sizeArea; i++) {
@@ -23,3 +23,5 @@ export default (props) => {
 
     return <div className="game-background">{getCells(props)}</div>
 }
+
+export default background;

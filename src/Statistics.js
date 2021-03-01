@@ -1,8 +1,10 @@
-export default (props) => {
+const statistics = (props) => {
     return (
-    <div className="game-statistics">
-        <div>Speed: {props.speed}</div>
-        <div>Size: {props.size}</div>
-    </div>);
+        <div className="game-statistics">
+            <div>Speed: {props.speed}</div>
+            <div>Size: {props.size}</div>
+        </div>);
 }
+
+export default statistics;
 

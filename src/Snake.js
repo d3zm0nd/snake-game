@@ -1,9 +1,9 @@
-import head from './head.png'
-import tail from './tail.png'
-import body from './body.png'
-import turn from './turn.png'
+import head from './img/head.png'
+import tail from './img/tail.png'
+import body from './img/body.png'
+import turn from './img/turn.png'
 
-export default (props) => {
+const snake = (props) => {
     const data = props.snakeDots.filter((dot) => {
         return (dot[0] !== null && dot[1] !== null);
     });
@@ -14,11 +14,11 @@ export default (props) => {
         const prevElem = data[i - 1];
         const getDegree = (direction) => {
             switch (direction) {
-                case 'LEFT': return 180; break;
-                case 'UP': return 270; break;
-                case 'DOWN': return 90; break;
+                case 'LEFT': return 180; 
+                case 'UP': return 270;
+                case 'DOWN': return 90;
                 case 'RIGHT':
-                default: return 0; break;
+                default: return 0; 
             }
         }
 
@@ -62,31 +62,31 @@ export default (props) => {
             return result;
         }
 
-        if (elem[0] === prevElem[0] && elem[1] < prevElem[1] && elem[0] < nextElem[0] && elem[1] === nextElem[1] ||
-            elem[0] < prevElem[0] && elem[1] === prevElem[1] && elem[0] === nextElem[0] && elem[1] < nextElem[1]
+        if ((elem[0] === prevElem[0] && elem[1] < prevElem[1] && elem[0] < nextElem[0] && elem[1] === nextElem[1]) ||
+            (elem[0] < prevElem[0] && elem[1] === prevElem[1] && elem[0] === nextElem[0] && elem[1] < nextElem[1])
         ) {
             result.type = 'turn';
             return result;
         }
 
-        if (elem[0] === prevElem[0] && elem[1] > prevElem[1] && elem[0] < nextElem[0] && elem[1] === nextElem[1] ||
-            elem[0] < prevElem[0] && elem[1] === prevElem[1] && elem[0] === nextElem[0] && elem[1] > nextElem[1]
+        if ((elem[0] === prevElem[0] && elem[1] > prevElem[1] && elem[0] < nextElem[0] && elem[1] === nextElem[1]) ||
+            (elem[0] < prevElem[0] && elem[1] === prevElem[1] && elem[0] === nextElem[0] && elem[1] > nextElem[1])
         ) {
             result.type = 'turn';
             result.degree = getDegree('UP');
             return result;
         }
 
-        if (elem[0] > prevElem[0] && elem[1] === prevElem[1] && elem[0] === nextElem[0] && elem[1] < nextElem[1] ||
-            elem[0] === prevElem[0] && elem[1] < prevElem[1] && elem[0] > nextElem[0] && elem[1] === nextElem[1]
+        if ((elem[0] > prevElem[0] && elem[1] === prevElem[1] && elem[0] === nextElem[0] && elem[1] < nextElem[1]) ||
+            (elem[0] === prevElem[0] && elem[1] < prevElem[1] && elem[0] > nextElem[0] && elem[1] === nextElem[1])
         ) {
             result.type = 'turn';
             result.degree = getDegree('DOWN');
             return result;
         }
 
-        if (elem[0] > prevElem[0] && elem[1] === prevElem[1] && elem[0] === nextElem[0] && elem[1] > nextElem[1] ||
-            elem[0] === prevElem[0] && elem[1] > prevElem[1] && elem[0] > nextElem[0] && elem[1] === nextElem[1]
+        if ((elem[0] > prevElem[0] && elem[1] === prevElem[1] && elem[0] === nextElem[0] && elem[1] > nextElem[1]) ||
+            (elem[0] === prevElem[0] && elem[1] > prevElem[1] && elem[0] > nextElem[0] && elem[1] === nextElem[1])
         ) {
             result.type = 'turn';
             result.degree = getDegree('LEFT');
@@ -120,9 +120,11 @@ export default (props) => {
                 }
 
                 return (
-                    <img src={image} className={classNames.join(' ')} key={i} style={style} x={dot[0]} y={dot[1]} />
+                    <img src={image} alt='*' className={classNames.join(' ')} key={i} style={style} x={dot[0]} y={dot[1]} />
                 );
             })}
         </div>
     )
 }
+
+export default snake;
