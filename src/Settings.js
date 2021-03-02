@@ -1,7 +1,7 @@
 const settings = (props) => {
-    const changeBorderCollisions = () => {
+   /*const changeBorderCollisions = () => {
         props.onChange('borderCollisions', !props.settings.borderCollisions);
-    }
+    }*/
 
     const changeSelfCollisions = () => {
         props.onChange('selfCollisions', !props.settings.selfCollisions);

@@ -288,7 +288,7 @@ class App extends Component {
     }
     return (
       <div className="game">
-        <img className="game-toFullScreen" onClick={this.toFullScreen} src={fullScreen} />
+        <img className="game-toFullScreen" alt ="#" onClick={this.toFullScreen} src={fullScreen} />
         <header className="game-header">
           SNAKE-GAME
         </header>
