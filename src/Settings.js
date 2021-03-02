@@ -20,10 +20,11 @@ const settings = (props) => {
     }
 
     return (<div className="game-settings">
+        {/*
         <div>
             <span>Border collisions&nbsp;</span>
             <input type="checkbox" checked={props.settings.borderCollisions} onChange={changeBorderCollisions} />
-        </div>
+        </div>*/}
         <div>
             <span>Self collisions&nbsp;</span>
             <input type="checkbox" checked={props.settings.selfCollisions} onChange={changeSelfCollisions} />
