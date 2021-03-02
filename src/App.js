@@ -37,7 +37,7 @@ class App extends Component {
   }
   getInitialState = () => {
     const borderCollisions = localStorage.getItem('borderCollisions') === 'true';
-    const selfCollisions = localStorage.getItem('selfCollisions') === 'true';
+    const selfCollisions = true; //localStorage.getItem('selfCollisions') === 'true';
     const sound = localStorage.getItem('sound') === 'true';
     const countFood = parseInt(localStorage.getItem('countFood'), 10) || 1;
     const sizeArea = parseInt(localStorage.getItem('sizeArea'), 10) || DEFAULT_SIZE_AREA;
