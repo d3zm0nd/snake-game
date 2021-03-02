@@ -15,7 +15,7 @@ import music from './sounds/push_ahead.ogg';
 const SIZE_PIXELS = 512;
 const START_SPEED = 800;
 const MAX_SPEED = 900;
-const DEFAULT_SIZE_AREA = 15;
+const DEFAULT_SIZE_AREA = 16;
 const DEFAULT_SNAKE_POSITION = [
   [3, 1],
   [3, 2],
