@@ -5,9 +5,14 @@ import { Foods, generateFoods } from './Food';
 import Background from './Background';
 import Settings from './Settings'
 import Statistics from './Statistics';
+import fullScreen from './img/fullScreen.png';
+
+import soundEat from './sounds/eat.mp3';
+import soundClick from './sounds/click.mp3';
+import music from './sounds/push_ahead.ogg';
 
 
-const SIZE_PIXELS = 600;
+const SIZE_PIXELS = 512;
 const START_SPEED = 800;
 const MAX_SPEED = 900;
 const DEFAULT_SIZE_AREA = 15;
@@ -30,10 +35,10 @@ class App extends Component {
     this.state = this.getInitialState();
     this.needToChangeDrirection = '';
   }
-
   getInitialState = () => {
     const borderCollisions = localStorage.getItem('borderCollisions') === 'true';
     const selfCollisions = localStorage.getItem('selfCollisions') === 'true';
+    const sound = localStorage.getItem('sound') === 'true';
     const countFood = parseInt(localStorage.getItem('countFood'), 10) || 1;
     const sizeArea = parseInt(localStorage.getItem('sizeArea'), 10) || DEFAULT_SIZE_AREA;
 
@@ -43,6 +48,7 @@ class App extends Component {
       snakeDots: DEFAULT_SNAKE_POSITION,
       idInterval: null,
       settings: {
+        sound,
         borderCollisions,
         selfCollisions,
         countFood,
@@ -55,6 +61,11 @@ class App extends Component {
   componentDidMount() {
     document.onkeydown = this.onKeyDown;
     this.init();
+    this._audio = {
+      music: new Audio(music),
+      eat: new Audio(soundEat),
+      click: new Audio(soundClick)
+    }
   }
 
   componentDidUpdate() {
@@ -64,7 +75,8 @@ class App extends Component {
 
   init() {
     this._speed = 0;
-    clearInterval(this.state.idInterval); 
+    this._startGame = true;
+    clearInterval(this.state.idInterval);
     this.setState(this.getInitialState());
     this.changeSpeed(this.state.speed);
   }
@@ -74,22 +86,22 @@ class App extends Component {
     switch (e.keyCode) {
       case 38:
         if (this.state.direction.toString() !== DIRECTION.DOWN.toString()) {
-          this.needToChangeDrirection =  DIRECTION.UP;
+          this.needToChangeDrirection = DIRECTION.UP;
         }
         break;
       case 40:
         if (this.state.direction.toString() !== DIRECTION.UP.toString()) {
-          this.needToChangeDrirection =  DIRECTION.DOWN;
+          this.needToChangeDrirection = DIRECTION.DOWN;
         }
         break;
       case 37:
         if (this.state.direction.toString() !== DIRECTION.RIGHT.toString()) {
-          this.needToChangeDrirection =  DIRECTION.LEFT;
+          this.needToChangeDrirection = DIRECTION.LEFT;
         }
         break;
       case 39:
         if (this.state.direction.toString() !== DIRECTION.LEFT.toString()) {
-          this.needToChangeDrirection =  DIRECTION.RIGHT;
+          this.needToChangeDrirection = DIRECTION.RIGHT;
         }
         break;
       case 32:
@@ -101,6 +113,19 @@ class App extends Component {
         break;
       default:
         break;
+    }
+
+    if ([37, 38, 39, 40, 32].indexOf(e.keyCode) !== -1) {
+      if (this._startGame) {
+        this._startGame = false;
+        if (this.state.settings.sound) {
+          this._audio.music.play();
+        }
+        this.gameResume();
+      }
+      if (this.state.settings.sound) {
+        this._audio.click.play();
+      }
     }
   }
 
@@ -120,7 +145,7 @@ class App extends Component {
     let dots = [...this.state.snakeDots];
     let head = dots[dots.length - 1];
 
-    if(this.needToChangeDrirection){
+    if (this.needToChangeDrirection) {
       this.setState({ direction: this.needToChangeDrirection });
       this.needToChangeDrirection = null;
     }
@@ -163,6 +188,7 @@ class App extends Component {
     let head = this.state.snakeDots[this.state.snakeDots.length - 1];
     this.state.foods.forEach((food, i) => {
       if (head[0] === food.coordinates[0] && head[1] === food.coordinates[1]) {
+        if (this.state.settings.sound) { this._audio.eat.play(); }
         this.removeFood(i);
         this.enlargeSnake();
         this.inceaseSpeed();
@@ -195,11 +221,14 @@ class App extends Component {
 
   onGameOver() {
     alert(`Game Over. Snake length is ${this.state.snakeDots.length}`);
-    this.newGame();
+    this.resetGame();
   }
 
-  newGame() {
-    clearTimeout(this.state.idInterval);
+  resetGame() {
+    if (this.state.settings.sound) {
+      this._audio.music.play();
+    }
+    clearInterval(this.state.idInterval);
     this.init();
   }
 
@@ -224,28 +253,48 @@ class App extends Component {
 
   afterChangeSetting = (field, value) => {
     switch (field) {
-      case 'sizeArea': this.newGame(); break;
-      case 'countFood': this.setState({foods:generateFoods(value, this.state.settings.sizeArea, this.state.snakeDots)}); break;
+      case 'sizeArea': this.resetGame(); break;
+      case 'countFood': this.setState({ foods: generateFoods(value, this.state.settings.sizeArea, this.state.snakeDots) }); break;
+      case 'sound': this.toggleSound(value); break;
       default: break;
     }
   }
 
+  toggleSound(value) {
+    if (!value) {
+      this._audio.music.pause();
+    }
+    else {
+      this._audio.music.play();
+    }
+  }
+
+  toFullScreen() {
+    let doc = document.documentElement;
+    let state = (document.webkitIsFullScreen || document.isFullScreen);
+    let requestFunc = (doc.requestFullscreen || doc.webkitRequestFullScreen);
+    let cancelFunc = (document.cancelFullScreen || document.webkitCancelFullScreen);
+
+    (!state) ? requestFunc.call(doc) : cancelFunc.call(document);
+  }
+
   render() {
-    let button;
     let SIZE_CELL = SIZE_PIXELS / this.state.settings.sizeArea;
+    let pauseButton;
     if (this.state.speed === 0) {
-      button = <button onClick={this.gameResume}>Resume</button>
+      pauseButton = <button onClick={this.gameResume}>Resume</button>
     } else {
-      button = <button onClick={this.gamePause}>Stop</button>
+      pauseButton = <button onClick={this.gamePause}>Stop</button>
     }
     return (
       <div className="game">
+        <img className="game-toFullScreen" onClick={this.toFullScreen} src={fullScreen} />
         <header className="game-header">
           SNAKE-GAME
-      </header>
+        </header>
         <div>
           <div class="game-content">
-            <Statistics size={this.state.snakeDots.length} speed={this.state.speed} />
+            <Statistics size={this.state.snakeDots.length} speed={this.state.speed || this._speed} />
             <div className="game-area">
               <Background sizeCell={SIZE_CELL} sizeArea={this.state.settings.sizeArea} />
               <Snake snakeDots={this.state.snakeDots} size={SIZE_CELL} />
@@ -255,7 +304,7 @@ class App extends Component {
           </div>
         </div>
         <div className="game-footer">
-          {button}
+          {pauseButton}
         </div>
       </div>
     )

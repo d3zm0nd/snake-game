@@ -1,9 +1,11 @@
 import { getRandomCoordinates } from './helpres'
-import apple from './img/apple1.png';
-import orange from './img/orange.png';
-import plum from './img/plum.png';
-
-const typesFood = ['apple1', 'orange', 'plum'];
+import food1 from './img/food1.png';
+import food2 from './img/food2.png';
+import food3 from './img/food3.png';
+import food4 from './img/food4.png';
+import food5 from './img/food5.png';
+import food6 from './img/food6.png';
+import food7 from './img/food7.png';
 
 export const generateFoods = (count, sizeArea, snakeDots) => {
     let foods = [];
@@ -20,7 +22,7 @@ export const generateFoods = (count, sizeArea, snakeDots) => {
     for (let i = 0; i < count; i++) {
         foods.push({
             coordinates: calcUnicPosition(),
-            type: typesFood[Math.floor(Math.random() * 3)]
+            type: 'food' + [Math.floor(Math.random() * 7)]
         });
     }
     return foods;
@@ -39,9 +41,13 @@ export const Foods = (props) => {
                 }
                 let image;
                 switch (food.type) {
-                    case 'apple1': image = apple; break;
-                    case 'orange': image = orange; break;
-                    default: image = plum; break;
+                    case 'food2': image = food2; break;
+                    case 'food3': image = food3; break;
+                    case 'food4': image = food4; break;
+                    case 'food5': image = food5; break;
+                    case 'food6': image = food6; break;
+                    case 'food7': image = food7; break;
+                    default: image = food1; break;
                 }
 
                 return (

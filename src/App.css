@@ -1,3 +1,7 @@
+.game {
+  position: relative;
+}
+
 .game-header {
   margin: 4px auto;
   text-align: center;
@@ -5,16 +9,29 @@
 
 .game-content{
   display: grid;
-  grid-template-columns: 1fr 600px 1fr;
+  grid-template-columns: 1fr 512px 1fr;
   grid-template-areas: "statistics game settings";
+}
+
+@media screen and (max-width: 600px){
+  .game-content{
+    grid-template-columns: 1fr;
+    grid-template-areas: "game";
+
+  }
+
+  .game-statistics, .game-settings {
+    display: none;
+  }
 }
 
 .game-area {
   grid-area: game;
   position: relative;
-  width: 600px;
-  height: 600px;
+  width: 512px;
+  height: 512px;
   outline: 2px solid #578a34;
+  margin: auto;
 }
 
 .game-statistics {
@@ -39,7 +56,7 @@
   position: relative;
   padding-top: 8px;
   margin: 0px auto;
-  width: 600px;
+  width: 512px;
   height: 100px;
 }
 
@@ -72,16 +89,23 @@
 .snake-food {
   position: absolute;
   z-index:2;
+  filter: drop-shadow(2px 4px 3px rgba(0,0,0,0.7));
 }
 
-.rotated180{
-
+.game-gameover {
+  position: absolute;
+  margin: auto;
+  width: 300px;
+  height: 200px;
+  background: aquamarine;
 }
 
-.rotated90{
-
-}
-
-.rotade240{
-
+.game-toFullScreen{
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  right: 8px;
+  top: 8px;
+  cursor: pointer;
+  z-index: 5;
 }

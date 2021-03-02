@@ -15,6 +15,10 @@ const settings = (props) => {
         props.onChange('sizeArea', parseInt(ev.target.value, 10));
     }
 
+    const changeSound= (ev) =>{
+        props.onChange('sound', !props.settings.sound);
+    }
+
     return (<div className="game-settings">
         <div>
             <span>Border collisions&nbsp;</span>
@@ -42,10 +46,14 @@ const settings = (props) => {
         <div>
             <span>Size game area&nbsp;</span>
             <select value={props.settings.sizeArea} onChange={changeSizeArea}>
-                <option value="15">15x15</option>
-                <option value="25">25x25</option>
-                <option value="30">30x30</option>
+                <option value="8">8x8</option>
+                <option value="16">16x16</option>
+                <option value="32">32x32</option>
             </select>
+        </div>
+        <div>
+            <span>Sound&nbsp;</span>
+            <input type="checkbox" checked={props.settings.sound} onChange={changeSound} />
         </div>
     </div>
     )
